@@ -1,10 +1,14 @@
+html,body {
+      overflow: auto;
+}
+
 .App {
   --primary-color: #C1464E;
   --padding-desktop: 100px;
   --padding-tablet: 20px;
   --padding-mobile: 10px;
 
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   flex: 1;

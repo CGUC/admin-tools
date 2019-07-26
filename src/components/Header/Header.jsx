@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter, NavLink } from 'react-router-dom';
+import { Button } from '../Shared/Button';
 import './Header.css';
 
 class Header extends Component {
@@ -12,6 +13,11 @@ class Header extends Component {
     };
   }
 
+  logout = () => {
+    localStorage.removeItem('token');
+    this.props.history.push('login');
+  }
+
   render() {
     return (
       <div className="header">
@@ -22,6 +28,19 @@ class Header extends Component {
           <div className="subtitle">
             admin console
           </div>
+        </div>
+
+        <div className="actions">
+          {localStorage.getItem('token') ?
+          <div className="links">
+            <NavLink className="navlink" activeClassName='navlink-active' to='/dashboard'>Dashboard</NavLink>
+            <NavLink className="navlink" to='/analytics'>Analytics</NavLink>
+            <NavLink className="navlink" to='/channels'>Channels</NavLink>
+            <NavLink className="navlink" to='/users'>Users</NavLink>
+            <div onClick={this.logout} className="navlink">Log Out</div>
+          </div>
+          : null}
+          <Button onClick={() => {window.location = "http://skybunk.grebelife.com"}}>Go To App</Button>
         </div>
       </div>
     );

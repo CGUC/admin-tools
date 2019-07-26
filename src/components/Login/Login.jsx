@@ -17,9 +17,13 @@ class Login extends Component {
 
   handleLogin = (e) => {
     
-    // TODO: Actual login logic
+    // TODO: Actual login logic.
+    this.props.history.push('/dashboard');
 
-    this.props.history.push('/dashboard')
+    // This is safe since react protects against XSS.
+    // As long as we don't use a CDN it should be fine.
+    localStorage.setItem('token', 'theirusertoken');
+
     e.preventDefault();
   };
 

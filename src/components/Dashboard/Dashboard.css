@@ -1,0 +1,28 @@
+.dashboard {
+	padding-left: var(--padding-desktop);
+	padding-right: var(--padding-desktop);
+	padding-bottom: 20px;
+	
+	display: grid;
+	grid-gap: 20px;
+	grid-template-columns: auto auto;
+}
+
+.analyticsCard {
+	grid-column-start: 1;
+	grid-column-end: 3;
+}
+
+.analytics {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 400px;
+	background-color: rgba(0, 0, 0, 0.1);
+	border-radius: 3px;
+	grid-column-end: 2;
+
+	grid-column-start: 1;
+  	grid-column-end: 2;
+}
