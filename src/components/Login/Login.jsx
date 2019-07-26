@@ -26,7 +26,7 @@ class Login extends Component {
   render() {
     return (
       <div className="login">
-        <Card width='420px' height='350px' marginBottom='80px'>
+        <Card width='420px' marginBottom='80px'>
           <CardHeader>
             Login
           </CardHeader>
