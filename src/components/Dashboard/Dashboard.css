@@ -8,12 +8,21 @@
 	grid-template-columns: auto auto;
 }
 
-.analyticsCard {
+.dashboard .analyticsCard {
 	grid-column-start: 1;
 	grid-column-end: 3;
 }
 
-.analytics {
+.dashboard .gridItem {
+	text-decoration: none;
+	color: #000;
+}
+
+.dashboard .gridItem:visited {
+	color: #000;
+}
+
+.dashboard .analytics {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;

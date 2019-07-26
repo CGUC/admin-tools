@@ -34,9 +34,9 @@ class Header extends Component {
           {localStorage.getItem('token') ?
           <div className="links">
             <NavLink className="navlink" activeClassName='navlink-active' to='/dashboard'>Dashboard</NavLink>
-            <NavLink className="navlink" to='/analytics'>Analytics</NavLink>
-            <NavLink className="navlink" to='/channels'>Channels</NavLink>
-            <NavLink className="navlink" to='/users'>Users</NavLink>
+            <NavLink className="navlink" activeClassName='navlink-active' to='/analytics'>Analytics</NavLink>
+            <NavLink className="navlink" activeClassName='navlink-active' to='/channels'>Channels</NavLink>
+            <NavLink className="navlink" activeClassName='navlink-active' to='/users'>Users</NavLink>
             <div onClick={this.logout} className="navlink">Log Out</div>
           </div>
           : null}
