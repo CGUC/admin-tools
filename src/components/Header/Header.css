@@ -1,0 +1,32 @@
+.header {
+	display: flex;
+	flex-direction: row;
+	padding: 20px;
+	padding-left: var(--padding-desktop);
+	background-color: var(--primary-color);
+}
+
+.header .title-container {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+}
+
+.header .title {
+	font-family: Roboto, sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 36px;
+
+	color: #FFFFFF;
+}
+
+.header .subtitle {
+	
+	font-family: Roboto, sans-serif;
+	font-style: normal;
+	font-weight: lighter;
+	font-size: 10px;
+
+	color: #FFF;
+}
