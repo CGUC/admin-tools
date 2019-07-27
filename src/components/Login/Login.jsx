@@ -3,6 +3,7 @@ import { withRouter } from 'react-router-dom';
 import { CardDescription, CardHeader, Card } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
+import Controller from './LoginController';
 import './Login.css';
 
 class Login extends Component {
@@ -11,21 +12,38 @@ class Login extends Component {
     super(props);
     
     this.state = {
-       
+      username: '',
+      password: '',
+      error: ''
     };
   }
 
-  handleLogin = (e) => {
-    
-    // TODO: Actual login logic.
-    this.props.history.push('/dashboard');
-
-    // This is safe since react protects against XSS.
-    // As long as we don't use a CDN it should be fine.
-    localStorage.setItem('token', 'theirusertoken');
-
+  handleLogin = async (e) => {
     e.preventDefault();
+    const response = await Controller.tryLogin(this.state.username, this.state.password);
+    console.log(response);
+
+    if (response.err) {
+      this.setState({error: response.err.message});
+    } else {
+      // TODO: Check if admin
+
+      // This is safe since react protects against XSS.
+      // As long as we don't use a CDN it should be fine.
+      localStorage.setItem('token', response.token);
+      this.props.history.push('/dashboard');
+    }
   };
+
+  handleUsernameChange = (e) => {
+    this.setState({username: e.target.value});
+    e.preventDefault();
+  }
+
+  handlePasswordChange = (e) => {
+    this.setState({password: e.target.value});
+    e.preventDefault();
+  }
 
   render() {
     return (
@@ -42,12 +60,17 @@ class Login extends Component {
             <InputLabel>
               Username
             </InputLabel>
-            <Input placeholder="conrad123" />
+            <Input placeholder="conrad123" value={this.state.username} onChange={this.handleUsernameChange} required/>
 
             <InputLabel>
               Password
             </InputLabel>
-            <Input type='password' placeholder="********"/>
+            <Input type='password' placeholder="********" value={this.state.password} onChange={this.handlePasswordChange} required/>
+            
+            <div className="error-message">
+              {this.state.error}
+            </div>
+
             <Button primary margin='auto'>
               Login
             </Button>

@@ -2,3 +2,42 @@
 	padding-left: var(--padding-desktop);
 	padding-right: var(--padding-desktop);
 }
+
+.users .user-list {
+	margin-top: 15px;
+	background-color: var(--primary-color);
+}
+
+.users .user-card {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	color: #333;
+	margin-top: -1px;
+	padding: 10px 20px 10px 10px;
+	background-color: white;
+	border: 1px solid var(--primary-color);
+	border-radius: 2px;
+	height: 50px;
+}
+
+.user-list .list-header {
+	height: 30px;
+	font-weight: bold;
+	background-color: rgba(255, 255, 255, 0.9);
+}
+
+.user-card .cell {
+	flex:0.2;
+}
+
+.user-card .edit {
+	width: 30px;
+	color: var(--primary-color);
+	font-weight: bold;
+	text-decoration: none;
+}
+
+.user-card .edit:visited {
+	color: var(--primary-color);
+}

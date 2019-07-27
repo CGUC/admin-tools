@@ -9,3 +9,8 @@
 	padding-right: var(--padding-desktop);
 	padding-bottom: 20px;
 }
+
+.login .error-message {
+	color: var(--primary-color);
+	height: 35px;
+}
