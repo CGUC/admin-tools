@@ -30,8 +30,6 @@ class Login extends Component {
     if (response.err) {
       this.setState({error: response.err.message});
     } else {
-      // TODO: Check if admin
-
       // This is safe since react protects against XSS.
       // As long as we don't use a CDN it should be fine.
       localStorage.setItem('token', response.token);
