@@ -38,9 +38,14 @@ class Channels extends Component {
           <div className="description">
             {channel.description}
           </div>
-          <Link to={`${channel._iid}/edit`} className="edit">
-            Edit
-          </Link>
+          <div className="action-cell">
+            <div className="action">
+              Edit
+            </div>
+            <div className="action">
+              Delete
+            </div>
+          </div>
         </div>
       )
     });
@@ -57,11 +62,6 @@ class Channels extends Component {
             Channel List
           </CardHeader>
 
-          <div style={{marginBottom: '20px'}}>
-            <Button primary width='150px'>Create</Button>
-            <Button width='150px'>Delete</Button>
-          </div>
-
           <InputLabel>Search</InputLabel>
           <Input/>
 
@@ -73,10 +73,13 @@ class Channels extends Component {
               <div className="title">
                 Description
               </div>
+              <div className="action-cell"/>
             </div>
             <Spinner loading={this.state.loading}/>
             {this.getChannelList()}
           </div>
+          
+          <Button primary width='150px'>Create</Button>
         </Card>
       </div>
     );

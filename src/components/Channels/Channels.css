@@ -5,6 +5,7 @@
 
 .channels .channel-list {
 	margin-top: 15px;
+	margin-bottom: 15px;
 }
 
 .channels .channel-card {
@@ -32,15 +33,21 @@
 }
 
 .channel-card .description {
-	flex: 0.8;
+	flex: 0.7;
 }
 
-.channel-card .edit {
+.channel-card .action-cell {
+	flex: 0.1;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-end;
+	justify-content: flex-end;
+}
+
+.action-cell .action {
 	color: var(--primary-color);
 	font-weight: bold;
 	text-decoration: none;
-}
-
-.channel-card .edit:visited {
-	color: var(--primary-color);
+	cursor: pointer;
+	margin-left: 10px;
 }

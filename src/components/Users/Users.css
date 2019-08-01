@@ -5,6 +5,7 @@
 
 .users .user-list {
 	margin-top: 15px;
+	margin-bottom: 15px;
 }
 
 .users .user-card {
@@ -27,16 +28,16 @@
 }
 
 .user-card .cell {
+	display: flex;
 	flex:0.2;
+	margin-right: 10px;
 }
 
-.user-card .edit {
-	width: 30px;
-	color: var(--primary-color);
-	font-weight: bold;
-	text-decoration: none;
-}
-
-.user-card .edit:visited {
-	color: var(--primary-color);
+.user-card .action-cell {
+	flex: 0.2;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-end;
+	justify-content: flex-end;
+		margin-right: 10px;
 }

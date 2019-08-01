@@ -12,3 +12,12 @@ export const Button = styled.button`
   cursor: pointer;
   width: ${props => props.width}
 `;
+
+export const Action = styled.button`
+  font-size: 1em;
+  background: white;
+  border: 0px;
+  color: var(--primary-color);
+  font-weight: bold;
+  cursor: pointer;
+`

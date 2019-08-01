@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Spinner from '../Shared/Loader';
 import { CardDescription, CardHeader, Card } from '../Shared/Card';
-import { Input, InputLabel } from '../Shared/Input';
+import { InputGroup, Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
 import Controller from './LoginController';
 import './Login.css';
@@ -59,15 +59,19 @@ class Login extends Component {
           </CardDescription>
 
           <form onSubmit={this.handleLogin}>
-            <InputLabel>
-              Username
-            </InputLabel>
-            <Input placeholder="conrad123" value={this.state.username} onChange={this.handleUsernameChange} required/>
+            <InputGroup>
+              <InputLabel>
+                Username
+              </InputLabel>
+              <Input placeholder="conrad123" value={this.state.username} onChange={this.handleUsernameChange} required/>
+            </InputGroup>
 
-            <InputLabel>
-              Password
-            </InputLabel>
-            <Input type='password' placeholder="********" value={this.state.password} onChange={this.handlePasswordChange} required/>
+            <InputGroup>
+              <InputLabel>
+                Password
+              </InputLabel>
+              <Input type='password' placeholder="********" value={this.state.password} onChange={this.handlePasswordChange} required/>
+            </InputGroup>
             
             <div className="error-message">
               <Spinner loading={this.state.loading}/>

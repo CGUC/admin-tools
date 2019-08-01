@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { withRouter, Redirect, Link } from 'react-router-dom';
+import { withRouter, Redirect } from 'react-router-dom';
 import Spinner from '../Shared/Loader';
 import { Card, CardHeader } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
-import { Button } from '../Shared/Button';
+import { Action, Button } from '../Shared/Button';
 import Controller from './UsersController'
 import './Users.css';
 
@@ -14,6 +14,7 @@ class Users extends Component {
 
     this.state = {
       loading: true,
+      editing: {},
       users: []
     }
   }
@@ -26,22 +27,75 @@ class Users extends Component {
     });
   }
 
+  handleClickEdit = (user) => {
+    this.setState({
+      editing: {...this.state.editing, [user._id]: {...user}}
+    })
+  }
+
+  handleCancelEdit = (user) => {
+    const tmp = this.state.editing
+    delete tmp[user._id]
+    this.setState({editing: tmp});
+  }
+
+  handleChange = (e, user, value) => {
+    const newUser = this.state.editing[user._id];
+    if (value === 'role')
+      newUser.role = e.target.value.split(", ");
+    else
+      newUser[value] = e.target.value;
+    this.setState({
+      editing: {...this.state.editing, [user._id]: newUser}
+    });
+  }
+
+  handleSave = (e) => {
+    e.preventDefault();
+
+    
+  }
+
   getUserList = () => {
     let userList = [];
 
     this.state.users.forEach((user) => {
-      userList.push(
-        <div className="user-card" key={user.username}>
-          <div className="cell">{user.firstName}</div>
-          <div className="cell">{user.lastName}</div>
-          <div className="cell">{user.username}</div>
-          <div className="cell">{user.role}</div>
-          <div className="cell"/>
-          <Link to={`${user._iid}/edit`} className="edit">
-            Edit
-          </Link>
-        </div>
-      )
+      if (user._id in this.state.editing) {
+        userList.push(
+          <div className="user-card" key={user._id}>
+            <div className="cell"> <Input width='100%' value={this.state.editing[user._id].firstName} onChange={(e) => this.handleChange(e, user, 'firstName')}/></div>
+            <div className="cell"> <Input width='100%' value={this.state.editing[user._id].lastName} onChange={(e) => this.handleChange(e, user, 'lastName')}/></div>
+            <div className="cell">{user.username}</div>
+            <div className="cell"> <Input width='100%' value={this.state.editing[user._id].role.join(', ')} onChange={(e) => this.handleChange(e, user, 'role')}/></div>
+            <div className="action-cell">
+              <Action>
+                Save
+              </Action>
+              <Action onClick={() => this.handleCancelEdit(user)}>
+                Cancel
+              </Action>
+            </div>
+          </div>
+        )
+      }
+      else {
+        userList.push(
+          <div className="user-card" key={user.username}>
+            <div className="cell">{user.firstName}</div>
+            <div className="cell">{user.lastName}</div>
+            <div className="cell">{user.username}</div>
+            <div className="cell">{user.role.join(', ')}</div>
+            <div className="action-cell">
+              <Action onClick={() => this.handleClickEdit(user)}>
+                Edit
+              </Action>
+              <Action>
+                Delete
+              </Action>
+            </div>
+          </div>
+        )
+      }
     });
 
     return userList;
@@ -55,11 +109,6 @@ class Users extends Component {
           <CardHeader>
             User List
           </CardHeader>
-
-          <div style={{marginBottom: '20px'}}>
-            <Button primary width='150px'>Create</Button>
-            <Button width='150px'>Delete</Button>
-          </div>
 
           <InputLabel>Search</InputLabel>
           <Input/>
@@ -84,6 +133,8 @@ class Users extends Component {
             <Spinner loading={this.state.loading}/>
             {this.getUserList()}
           </div>
+
+          <Button primary width='150px'>Create</Button>
         </Card>
 
       </div>
