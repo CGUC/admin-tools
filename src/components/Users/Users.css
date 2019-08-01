@@ -5,7 +5,6 @@
 
 .users .user-list {
 	margin-top: 15px;
-	background-color: var(--primary-color);
 }
 
 .users .user-card {
@@ -24,7 +23,7 @@
 .user-list .list-header {
 	height: 30px;
 	font-weight: bold;
-	background-color: rgba(255, 255, 255, 0.9);
+	background-color: rgba(var(--primary-color-rgb), 0.1);
 }
 
 .user-card .cell {

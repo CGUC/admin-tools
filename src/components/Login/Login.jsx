@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
+import Spinner from '../Shared/Loader';
 import { CardDescription, CardHeader, Card } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
@@ -12,6 +13,7 @@ class Login extends Component {
     super(props);
     
     this.state = {
+      loading: false,
       username: '',
       password: '',
       error: ''
@@ -20,8 +22,10 @@ class Login extends Component {
 
   handleLogin = async (e) => {
     e.preventDefault();
+
+    this.setState({loading: true, error: ''});
     const response = await Controller.tryLogin(this.state.username, this.state.password);
-    console.log(response);
+    this.setState({loading: false});
 
     if (response.err) {
       this.setState({error: response.err.message});
@@ -68,9 +72,9 @@ class Login extends Component {
             <Input type='password' placeholder="********" value={this.state.password} onChange={this.handlePasswordChange} required/>
             
             <div className="error-message">
+              <Spinner loading={this.state.loading}/>
               {this.state.error}
             </div>
-
             <Button primary margin='auto'>
               Login
             </Button>

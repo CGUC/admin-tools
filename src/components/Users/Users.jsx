@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
+import Spinner from '../Shared/Loader';
 import { Card, CardHeader } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
@@ -12,13 +13,17 @@ class Users extends Component {
     super(props);
 
     this.state = {
+      loading: true,
       users: []
     }
   }
 
   async componentDidMount() {
     const response = await Controller.getUsers(localStorage.getItem('token'));
-    this.setState({users: response});
+    this.setState({
+      loading: false,
+      users: response
+    });
   }
 
   getUserList = () => {
@@ -76,6 +81,7 @@ class Users extends Component {
               <div className="cell"/>
               <div className="edit"/>
             </div>
+            <Spinner loading={this.state.loading}/>
             {this.getUserList()}
           </div>
         </Card>

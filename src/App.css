@@ -3,7 +3,8 @@ html,body {
 }
 
 .App {
-  --primary-color: #C1464E;
+  --primary-color: rgb(193,70,78);
+  --primary-color-rgb: 193, 70, 78;
   --padding-desktop: 100px;
   --padding-tablet: 20px;
   --padding-mobile: 10px;

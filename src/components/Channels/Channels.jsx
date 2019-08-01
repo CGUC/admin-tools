@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
+import Spinner from '../Shared/Loader';
 import { Card, CardHeader } from '../Shared/Card';
+import { Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
 import Controller from './ChannelsController.js';
 import './Channels.css';
@@ -11,13 +13,17 @@ class Channels extends Component {
     super(props)
 
     this.state = {
-      channels: []
+      channels: [],
+      loading: true
     };
   }
 
   async componentDidMount() {
     const response = await Controller.getChannels(localStorage.getItem('token'));
-    this.setState({channels: response});
+    this.setState({
+      loading: false,
+      channels: response
+    });
   }
 
   getChannelList = () => {
@@ -51,10 +57,13 @@ class Channels extends Component {
             Channel List
           </CardHeader>
 
-          <div>
+          <div style={{marginBottom: '20px'}}>
             <Button primary width='150px'>Create</Button>
             <Button width='150px'>Delete</Button>
           </div>
+
+          <InputLabel>Search</InputLabel>
+          <Input/>
 
           <div className="channel-list">
             <div className="channel-card list-header">
@@ -65,7 +74,7 @@ class Channels extends Component {
                 Description
               </div>
             </div>
-
+            <Spinner loading={this.state.loading}/>
             {this.getChannelList()}
           </div>
         </Card>
