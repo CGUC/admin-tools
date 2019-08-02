@@ -7,7 +7,7 @@ import { Card, CardHeader } from '../Shared/Card';
 import { InputGroup, Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
 import CreateChannelModal from './CreateChannelModal';
-import DeleteChannelModal from './DeleteChannelModal';
+import ChannelTile from './ChannelTile';
 import Controller from './ChannelsController';
 import './Channels.css';
 
@@ -35,26 +35,11 @@ class Channels extends Component {
     });
   }
 
-  setChannelForDeletion = (channel) => {
+  deleteChannel = (channel) => {
     this.setState({
-      channelToDelete: channel,
-      showDeleteModal: true
-    })
-  }
-
-  cancelDelete = () => {
-    this.setState({
-      channelToDelete: {},
-      showDeleteModal: false
-    })
-  }
-
-  confirmDelete = () => {
-    this.setState({
-      channels: this.state.channels.filter(c => c._id !== this.state.channelToDelete._id), 
-      filteredChannels: this.state.filteredChannels.filter(c => c._id !== this.state.channelToDelete._id)
+      channels: this.state.channels.filter(c => c._id !== channel._id), 
+      filteredChannels: this.state.filteredChannels.filter(c => c._id !== channel._id)
     });
-    this.cancelDelete();
   }
 
   updateAfterCreate = (channel) => {
@@ -95,30 +80,23 @@ class Channels extends Component {
     });
   }
 
+  saveChannel = (oldChannel, newChannel) => {
+    this.setState({
+      channels: this.state.channels.map(c => 
+        c._id === oldChannel._id ? {...c, ...newChannel} : c
+      ),
+      filteredChannels: this.state.filteredChannels.map(c => 
+        c._id === oldChannel._id ? {...c, ...newChannel} : c
+      )
+    })
+  }
+
   getChannelList = () => {
     let channelList = [];
 
     this.state.filteredChannels.forEach((channel) => {
       channelList.push(
-        <div className="channel-card" key={channel.name}>
-          <div className="title">
-            {channel.name}
-          </div>
-          <div className="description">
-            {channel.description}
-          </div>
-          <div className="title">
-            {channel.tags.join(", ")}
-          </div>
-          <div className="action-cell">
-            <div className="action">
-              Edit
-            </div>
-            <div className="action" onClick={() => {this.setChannelForDeletion(channel)}}>
-              Delete
-            </div>
-          </div>
-        </div>
+        <ChannelTile channel={channel} onDelete={this.deleteChannel} save={this.saveChannel} key={channel._id}/>
       )
     });
 
@@ -130,7 +108,6 @@ class Channels extends Component {
     (
       <div className='channels'>
         <CreateChannelModal show={this.state.showCreateModal} update={this.updateAfterCreate} cancel={this.cancelCreate}/>
-        <DeleteChannelModal show={this.state.showDeleteModal} channel={this.state.channelToDelete} cancel={this.cancelDelete} delete={this.confirmDelete}/>
 
         <Card>
           <CardHeader>
@@ -148,10 +125,10 @@ class Channels extends Component {
               <div className="description">
                 Description
               </div>
-              <div className="title">
+              <div className="tags">
                 Tags
               </div>
-              <div className="action-cell"/>
+              <div className="tags"/>
             </div>
             <Spinner loading={this.state.loading}/>
             {this.getChannelList()}

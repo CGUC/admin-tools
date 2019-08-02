@@ -5,6 +5,7 @@ import Spinner from '../Shared/Loader';
 import { Card, CardHeader } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
 import { Action, Button } from '../Shared/Button';
+import UserTile from './UserTile';
 import Controller from './UsersController'
 import './Users.css';
 
@@ -15,7 +16,6 @@ class Users extends Component {
 
     this.state = {
       loading: true,
-      editing: {},
       users: [],
       filteredUsers: []
     }
@@ -30,31 +30,22 @@ class Users extends Component {
     });
   }
 
-  handleClickEdit = (user) => {
+  deleteUser = (user) => {
     this.setState({
-      editing: {...this.state.editing, [user._id]: {...user}}
-    })
-  }
-
-  handleCancelEdit = (user) => {
-    const tmp = this.state.editing
-    delete tmp[user._id]
-    this.setState({editing: tmp});
-  }
-
-  handleChange = (e, user, value) => {
-    const newUser = this.state.editing[user._id];
-    if (value === 'role')
-      newUser.role = e.target.value.split(", ");
-    else
-      newUser[value] = e.target.value;
-    this.setState({
-      editing: {...this.state.editing, [user._id]: newUser}
+      users: this.state.users.filter(u => u._id !== user._id), 
+      filteredUsers: this.state.filteredUsers.filter(u => u._id !== user._id)
     });
   }
 
-  handleSave = (e) => {
-    e.preventDefault();
+  saveUser = (oldUser, newUser) => {
+    this.setState({
+      users: this.state.users.map(u => 
+        u._id === oldUser._id ? {...u, ...newUser} : u
+      ),
+      filteredUsers: this.state.filteredUsers.map(u => 
+        u._id === oldUser._id ? {...u, ...newUser} : u
+      )
+    })
   }
 
   filterUsers = (e) => {
@@ -89,42 +80,9 @@ class Users extends Component {
     let userList = [];
 
     this.state.filteredUsers.forEach((user) => {
-      if (user._id in this.state.editing) {
-        userList.push(
-          <div className="user-card" key={user._id}>
-            <div className="cell"> <Input width='100%' value={this.state.editing[user._id].firstName} onChange={(e) => this.handleChange(e, user, 'firstName')}/></div>
-            <div className="cell"> <Input width='100%' value={this.state.editing[user._id].lastName} onChange={(e) => this.handleChange(e, user, 'lastName')}/></div>
-            <div className="cell">{user.username}</div>
-            <div className="cell"> <Input width='100%' value={this.state.editing[user._id].role.join(', ')} onChange={(e) => this.handleChange(e, user, 'role')}/></div>
-            <div className="action-cell">
-              <Action>
-                Save
-              </Action>
-              <Action onClick={() => this.handleCancelEdit(user)}>
-                Cancel
-              </Action>
-            </div>
-          </div>
-        )
-      }
-      else {
-        userList.push(
-          <div className="user-card" key={user.username}>
-            <div className="cell">{user.firstName}</div>
-            <div className="cell">{user.lastName}</div>
-            <div className="cell">{user.username}</div>
-            <div className="cell">{user.role.join(', ')}</div>
-            <div className="action-cell">
-              <Action onClick={() => this.handleClickEdit(user)}>
-                Edit
-              </Action>
-              <Action>
-                Delete
-              </Action>
-            </div>
-          </div>
-        )
-      }
+      userList.push(
+        <UserTile user={user} onDelete={this.deleteUser} save={this.saveUser} key={user._id}/>
+      )
     });
 
     return userList;
