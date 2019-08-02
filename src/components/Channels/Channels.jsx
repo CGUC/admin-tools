@@ -51,7 +51,8 @@ class Channels extends Component {
 
   confirmDelete = () => {
     this.setState({
-      channels: this.state.channels.filter(c => c._id !== this.state.channelToDelete._id) 
+      channels: this.state.channels.filter(c => c._id !== this.state.channelToDelete._id), 
+      filteredChannels: this.state.filteredChannels.filter(c => c._id !== this.state.channelToDelete._id)
     });
     this.cancelDelete();
   }
