@@ -11,8 +11,9 @@ export const Card = styled.div`
 	display: flex;
 	flex-direction: column;
 
-	max-width: ${props => props.width};
+	width: ${props => props.width};
 	height: ${props => props.height};
+	margin: ${props => props.margin};
 	margin-bottom: ${props => props.marginBottom};
 
 `
