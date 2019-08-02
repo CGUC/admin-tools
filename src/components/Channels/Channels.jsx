@@ -5,6 +5,8 @@ import Modal from '../Shared/Modal';
 import { Card, CardHeader } from '../Shared/Card';
 import { InputGroup, Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
+import CreateChannelModal from './CreateChannelModal';
+import DeleteChannelModal from './DeleteChannelModal';
 import Controller from './ChannelsController.js';
 import './Channels.css';
 
@@ -15,14 +17,10 @@ class Channels extends Component {
 
     this.state = {
       channels: [],
-      createChannel: false,
+      showCreateModal: false,
+      showDeleteModal: false,
       loading: true,
-      loadingCreate: false,
-      newChannel: {
-        name:'',
-        description:'',
-        tag:''
-      }
+      channelToDelete: {}
     };
   }
 
@@ -32,6 +30,40 @@ class Channels extends Component {
       loading: false,
       channels: response
     });
+  }
+
+  setChannelForDeletion = (channel) => {
+    this.setState({
+      channelToDelete: channel,
+      showDeleteModal: true
+    })
+  }
+
+  cancelDelete = () => {
+    this.setState({
+      channelToDelete: {},
+      showDeleteModal: false
+    })
+  }
+
+  confirmDelete = () => {
+    this.setState({
+      channels: this.state.channels.filter(c => c._id != this.state.channelToDelete._id) 
+    });
+    this.cancelDelete();
+  }
+
+  updateAfterCreate = (channel) => {
+    this.setState({
+      channels: [...this.state.channels, channel],
+      showCreateModal: false
+    });
+  }
+
+  cancelCreate = () => {
+    this.setState({
+      showCreateModal: false
+    })
   }
 
   getChannelList = () => {
@@ -53,7 +85,7 @@ class Channels extends Component {
             <div className="action">
               Edit
             </div>
-            <div className="action">
+            <div className="action" onClick={() => {this.setChannelForDeletion(channel)}}>
               Delete
             </div>
           </div>
@@ -64,105 +96,13 @@ class Channels extends Component {
     return channelList;
   }
 
-  handleCreateChange = (e, val) => {
-    const updatedChannel = this.state.newChannel;
-    updatedChannel[val] = e.target.value;
-
-    this.setState({newChannel: updatedChannel});
-  }
-
-  handleCreatechannel = async (e) => {
-    e.preventDefault();
-    this.setState({
-      loadingCreate: true,
-      createError: '',
-    })
-    const newChannel = {
-      name: this.state.newChannel.name,
-      description: this.state.newChannel.description,
-      tags: [this.state.newChannel.tag]
-    }
-    const response = await Controller.createChannel(localStorage.getItem('token'), newChannel);
-    this.setState({loadingCreate: false});
-
-    if (response.status != 200) {
-      this.setState({createError: 'There was an error creating the channel. Please try again.'})
-    }
-    else {
-      this.handleCancelCreate();
-      this.setState({channels: [...this.state.channels, response.data]})
-    }
-  }
-
-  handleCancelCreate = () => {
-    this.setState({
-      createChannel: false,
-      newChannel: {
-        name:'',
-        description:'',
-        tag:''
-      }
-    })
-  }
-
-  createChannelModal = () => {
-    return (
-      <Modal show={this.state.createChannel} title="Create Channel" width="500px">
-        <form onSubmit={this.handleCreatechannel}>
-          <InputGroup>
-            <InputLabel>
-              Name
-            </InputLabel>
-            <Input 
-              placeholder="How users will see the channel"
-              value={this.state.newChannel.name} 
-              onChange={e => {this.handleCreateChange(e, 'name')}}
-              required
-            />
-          </InputGroup>
-
-          <InputGroup>
-            <InputLabel>
-              Description
-            </InputLabel>
-            <Input 
-              placeholder="A brief description of the channel"
-              onChange={e => {this.handleCreateChange(e, 'description')}}
-              value={this.state.newChannel.description}
-              required
-            />
-          </InputGroup>
-          
-          <InputGroup>
-            <InputLabel>
-              Tag
-            </InputLabel>
-            <Input
-              placeholder="Posts made the the corresponding tag will appear under this channel"
-              value={this.state.newChannel.tag}
-              onChange={e => {this.handleCreateChange(e, 'tag')}}
-              required
-            />
-          </InputGroup>
-          <div>
-            {this.state.createError}
-            <Spinner loading={this.state.loadingCreate}/>
-          </div>
-          <div>
-            <Button primary>Submit</Button>
-            <Button type="reset" onClick={this.handleCancelCreate}>Cancel</Button>
-          </div>
-        </form>
-      </Modal>
-    )
-  }
-
   render() {
     return !localStorage.getItem('token') ? <Redirect to='/login'/> :
     (
       <div className='channels'>
-        {this.createChannelModal()}
-        
+        <CreateChannelModal show={this.state.showCreateModal} update={this.updateAfterCreate} cancel={this.cancelCreate}/>
+        <DeleteChannelModal show={this.state.showDeleteModal} channel={this.state.channelToDelete} cancel={this.cancelDelete} delete={this.confirmDelete}/>
+
         <Card>
           <CardHeader>
             Channel List
@@ -188,7 +128,7 @@ class Channels extends Component {
             {this.getChannelList()}
           </div>
           
-          <Button primary width='150px' onClick={() => this.setState({createChannel:true})}>Create</Button>
+          <Button primary width='150px' onClick={() => this.setState({showCreateModal:true})}>Create</Button>
         </Card>
       </div>
     );
