@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Fuse from 'fuse.js';
 import { withRouter, Redirect, Link } from 'react-router-dom';
 import Spinner from '../Shared/Loader';
 import Modal from '../Shared/Modal';
@@ -7,7 +8,7 @@ import { InputGroup, Input, InputLabel } from '../Shared/Input';
 import { Button } from '../Shared/Button';
 import CreateChannelModal from './CreateChannelModal';
 import DeleteChannelModal from './DeleteChannelModal';
-import Controller from './ChannelsController.js';
+import Controller from './ChannelsController';
 import './Channels.css';
 
 class Channels extends Component {
@@ -17,6 +18,7 @@ class Channels extends Component {
 
     this.state = {
       channels: [],
+      filteredChannels: [],
       showCreateModal: false,
       showDeleteModal: false,
       loading: true,
@@ -28,7 +30,8 @@ class Channels extends Component {
     const response = await Controller.getChannels(localStorage.getItem('token'));
     this.setState({
       loading: false,
-      channels: response
+      channels: response,
+      filteredChannels: response
     });
   }
 
@@ -48,7 +51,7 @@ class Channels extends Component {
 
   confirmDelete = () => {
     this.setState({
-      channels: this.state.channels.filter(c => c._id != this.state.channelToDelete._id) 
+      channels: this.state.channels.filter(c => c._id !== this.state.channelToDelete._id) 
     });
     this.cancelDelete();
   }
@@ -66,10 +69,35 @@ class Channels extends Component {
     })
   }
 
+  filterChannels = (e) => {
+    if (e.target.value === '') {
+      this.setState({filteredChannels: this.state.channels});
+      return;
+    }
+
+    const options = {
+      keys: [{
+        name: 'name',
+        weight: 0.7,
+      }, {
+        name: 'description',
+        weight: 0.1,
+      }, {
+        name: 'tags',
+        weight: 0.2,
+      }],
+      threshold: 0.5,
+    }
+    const fuse = new Fuse(this.state.channels, options)
+    this.setState({
+      filteredChannels: fuse.search(e.target.value)
+    });
+  }
+
   getChannelList = () => {
     let channelList = [];
 
-    this.state.channels.forEach((channel) => {
+    this.state.filteredChannels.forEach((channel) => {
       channelList.push(
         <div className="channel-card" key={channel.name}>
           <div className="title">
@@ -109,7 +137,7 @@ class Channels extends Component {
           </CardHeader>
 
           <InputLabel>Search</InputLabel>
-          <Input/>
+          <Input onChange={this.filterChannels}/>
 
           <div className="channel-list">
             <div className="channel-card list-header">

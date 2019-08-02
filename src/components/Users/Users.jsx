@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect } from 'react-router-dom';
+import Fuse from 'fuse.js';
 import Spinner from '../Shared/Loader';
 import { Card, CardHeader } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
@@ -15,7 +16,8 @@ class Users extends Component {
     this.state = {
       loading: true,
       editing: {},
-      users: []
+      users: [],
+      filteredUsers: []
     }
   }
 
@@ -23,7 +25,8 @@ class Users extends Component {
     const response = await Controller.getUsers(localStorage.getItem('token'));
     this.setState({
       loading: false,
-      users: response
+      users: response,
+      filteredUsers: response
     });
   }
 
@@ -52,14 +55,40 @@ class Users extends Component {
 
   handleSave = (e) => {
     e.preventDefault();
+  }
 
-    
+  filterUsers = (e) => {
+    if (e.target.value === '') {
+      this.setState({filteredUsers: this.state.users});
+      return;
+    }
+
+    const options = {
+      keys: [{
+        name: 'firstName',
+        weight: 0.3,
+      }, {
+        name: 'lastName',
+        weight: 0.3,
+      }, {
+        name: 'username',
+        weight: 0.2,
+      }, {
+        name: 'role',
+        weight: 0.1
+      }],
+      threshold: 0.5,
+    }
+    const fuse = new Fuse(this.state.users, options)
+    this.setState({
+      filteredUsers: fuse.search(e.target.value)
+    });
   }
 
   getUserList = () => {
     let userList = [];
 
-    this.state.users.forEach((user) => {
+    this.state.filteredUsers.forEach((user) => {
       if (user._id in this.state.editing) {
         userList.push(
           <div className="user-card" key={user._id}>
@@ -111,7 +140,7 @@ class Users extends Component {
           </CardHeader>
 
           <InputLabel>Search</InputLabel>
-          <Input/>
+          <Input onChange={this.filterUsers}/>
 
           <div className="user-list">
             <div className="user-card list-header">
