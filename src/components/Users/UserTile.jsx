@@ -20,10 +20,6 @@ export default class UserTile extends Component {
     }
   }
 
-  async componentDidMount() {
-
-  }
-
   handleClickEdit = () => {
     this.setState({
       editing: true,
@@ -45,32 +41,53 @@ export default class UserTile extends Component {
       });
   }
 
-  handleSave = (e) => {
+  handleSave = async (e) => {
     e.preventDefault();
-
-    this.setState({
-      editing: false
-    })
-
-    // TODO: Update endpoint in backend
-
-    this.props.save(
-      this.props.user, {
+    const response = await Controller.updateUser(
+      localStorage.getItem('token'),
+      this.props.user._id,
+      {...this.props.user,
         firstName: this.state.firstName,
         lastName: this.state.lastName,
-        username: this.state.username,
         role: this.state.role
       }
     );
+
+    if (response.status == 403) {
+      this.setState({
+        error: 'You do not have permission to udpate this user'
+      });
+    } else if (response.status !== 200) {
+      this.setState({
+        error: 'There was an error updating the user.'
+      });
+    } else {
+      this.setState({
+        editing: false
+      });
+      this.props.save(
+        this.props.user, {
+          firstName: this.state.firstName,
+          lastName: this.state.lastName,
+          username: this.state.username,
+          role: this.state.role
+        }
+      );
+    }
   }
 
   showDeleteModal = () => {
     this.setState({upForDelete: true})
   }
 
-  confirmDelete = () => {
-    this.props.onDelete(this.props.user);
-    this.cancelDelete();
+  confirmDelete = async () => {
+    const response = await Controller.deleteUser(localStorage.getItem('token'), this.props.user._id);
+    if (response.status != 200) {
+      throw new Error('There was an error deleting the user. Please try again.');
+    } else {
+      this.props.onDelete(this.props.user);
+      this.cancelDelete();
+    }
   }
 
   cancelDelete = () => {

@@ -9,7 +9,6 @@ const Controller = {
 					Authorization: `Bearer ${token}`
 				} 
 			})
-			console.log(response)
 			return response.data;
 		} catch (e) {
 			console.log(e);
@@ -29,7 +28,37 @@ const Controller = {
 			console.log(e);
 			return e;
 		}
-	}
+	},
+
+	updateChannel: async function(token, id, data) {
+		try {
+			const response = await axios.put(`${API_URL}/channels/${id}`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      return response;
+		} catch (e) {
+      console.log(e);
+      return e;
+    }
+	},
+
+  deleteChannel: async function(token, id) {
+    try {
+      const response = await axios.delete(`${API_URL}/channels/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      return response;
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
+  }
 }
 
 export default Controller;

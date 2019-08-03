@@ -17,7 +17,7 @@ export default class DeleteUserModal extends Component {
     };
   }
 
-  handleDeleteUser = (e) => {
+  handleDeleteUser = async (e) => {
     e.preventDefault();
 
     if (this.state.deleteConfirmation != this.props.user.username) {
@@ -27,17 +27,13 @@ export default class DeleteUserModal extends Component {
       return;
     }
 
-    // TODO: delete channel endpoint on server
-    // this.setState({loading: true});
-    // const response = await Controller.deleteChannel(localStorage.getItem('token'), newChannel);
-    // this.setState({loading: false});
-  
-    // if (response.status != 200) {
-    //   this.setState({error: 'There was an error creating the channel. Please try again.'})
-    // }
-    // else {
-      this.props.delete();
-    // }
+    this.setState({loading: true});
+    try {
+      await this.props.delete();
+    } catch (e) {
+      this.setState({loading: false});
+      this.setState({error: e.message});
+    }
   }
 
 	render() {

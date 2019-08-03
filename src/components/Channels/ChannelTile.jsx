@@ -26,7 +26,8 @@ export default class ChannelTile extends Component {
     this.setState({
       editing: true,
       name: this.props.channel.name,
-      description: this.props.channel.description
+      description: this.props.channel.description,
+      error: ''
     })
   }
 
@@ -42,29 +43,52 @@ export default class ChannelTile extends Component {
       });
   }
 
-  handleSave = (e) => {
+  handleSave = async (e) => {
     e.preventDefault();
-    this.setState({
-      editing: false
-    })
-
-    // TODO: Update endpoint in backend
-
-    this.props.save(
-      this.props.channel, {
+    const response = await Controller.updateChannel(
+      localStorage.getItem('token'),
+      this.props.channel._id,
+      {...this.props.channel,
         name: this.state.name,
         description: this.state.description
       }
     );
+
+    if (response.status == 403) {
+      this.setState({
+        error: 'You do not have permission to udpate this channel'
+      });
+    } else if (response.status !== 200) {
+      this.setState({
+        error: 'There was an error updating the channel.'
+      });
+    } else {
+      this.setState({
+        editing: false
+      })
+
+      this.props.save(
+        this.props.channel, {
+          name: this.state.name,
+          description: this.state.description
+        }
+      );
+    }
+
   }
 
   showDeleteModal = () => {
     this.setState({upForDelete: true})
   }
 
-  confirmDelete = () => {
-    this.props.onDelete(this.props.channel);
-    this.cancelDelete();
+  confirmDelete = async () => {
+    const response = await Controller.deleteChannel(localStorage.getItem('token'), this.props.channel._id);
+    if (response.status != 200) {
+      throw new Error('There was an error deleting the channel. Please try again.');
+    } else {
+      this.cancelDelete();
+      this.props.onDelete(this.props.channel);
+    }
   }
 
   cancelDelete = () => {

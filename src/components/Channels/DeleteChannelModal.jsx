@@ -17,7 +17,7 @@ export default class DeleteChannelModal extends Component {
     };
   }
 
-  handleDeleteChannel = (e) => {
+  handleDeleteChannel = async (e) => {
     e.preventDefault();
 
     if (this.state.deleteConfirmation != this.props.channel.name) {
@@ -27,17 +27,13 @@ export default class DeleteChannelModal extends Component {
       return;
     }
 
-    // TODO: delete channel endpoint on server
-    // this.setState({loading: true});
-    // const response = await Controller.deleteChannel(localStorage.getItem('token'), newChannel);
-    // this.setState({loading: false});
-  
-    // if (response.status != 200) {
-    //   this.setState({error: 'There was an error creating the channel. Please try again.'})
-    // }
-    // else {
-      this.props.delete();
-    // }
+    this.setState({loading: true});
+    try {
+      await this.props.delete();
+    } catch (e) {
+      this.setState({loading: false});
+      this.setState({error: e.message});
+    }
   }
 
 	render() {

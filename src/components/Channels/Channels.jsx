@@ -45,6 +45,7 @@ class Channels extends Component {
   updateAfterCreate = (channel) => {
     this.setState({
       channels: [...this.state.channels, channel],
+      filteredChannels: [...this.state.channels, channel],
       showCreateModal: false
     });
   }
