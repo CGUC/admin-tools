@@ -18,3 +18,10 @@ export const InputGroup = styled.div`
 	flex-direction: column;
 	margin-bottom: 20px;
 `
+
+export const InputGroupRow = styled.div`
+	display: flex;
+	flex-direction: row;
+	margin-bottom: 0px;
+	align-items: center;
+`

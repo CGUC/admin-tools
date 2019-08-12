@@ -5,8 +5,10 @@ import Spinner from '../Shared/Loader';
 import { Card, CardHeader } from '../Shared/Card';
 import { Input, InputLabel } from '../Shared/Input';
 import { Action, Button } from '../Shared/Button';
+import Modal from '../Shared/Modal';
+import InviteUsersModal from './InviteUsersModal';
 import UserTile from './UserTile';
-import Controller from './UsersController'
+import Controller from './UsersController';
 import './Users.css';
 
 class Users extends Component {
@@ -17,7 +19,9 @@ class Users extends Component {
     this.state = {
       loading: true,
       users: [],
-      filteredUsers: []
+      filteredUsers: [],
+      showInviteModal: false,
+      showInviteModal: false
     }
   }
 
@@ -46,6 +50,31 @@ class Users extends Component {
         u._id === oldUser._id ? {...u, ...newUser} : u
       )
     })
+  }
+
+  handleInvite = () => {
+    this.setState({
+      showInviteModal: true
+    })
+  }
+
+  cancelInvite = () => {
+    this.setState({
+      showInviteModal: false
+    })
+  }
+
+  handleConfirmInvites = () => {
+    this.setState({
+      showInviteModal: false,
+      showSummaryModal: true,
+    });
+  }
+
+  closeSummary = () => {
+    this.setState({
+      showSummaryModal: false
+    });
   }
 
   filterUsers = (e) => {
@@ -92,6 +121,12 @@ class Users extends Component {
     return !localStorage.getItem('token') ? <Redirect to='/login'/> :
     (
       <div className='users'>
+        <InviteUsersModal show={this.state.showInviteModal} update={this.updateAfterInvite} cancel={this.cancelInvite} onConfirm={this.handleConfirmInvites}/>        
+        <Modal show={this.state.showSummaryModal}>
+        <div style={{marginBottom:'10px'}}>Successfully sent emails to users.</div>
+        <Button primary onClick={this.closeSummary}>Ok</Button>
+        </Modal>
+
         <Card>
           <CardHeader>
             User List
@@ -121,7 +156,7 @@ class Users extends Component {
             {this.getUserList()}
           </div>
 
-          <Button primary width='150px'>Create</Button>
+          <Button primary width='150px' onClick={this.handleInvite}>Invite</Button>
         </Card>
 
       </div>

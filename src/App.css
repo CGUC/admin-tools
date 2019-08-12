@@ -24,3 +24,36 @@ form {
   flex-direction: column;
   flex: 1;
 }
+
+.primary-button {
+  background: var(--primary-color);
+  color: white;
+  font-size: 1em;
+  margin: 2px;
+  padding: 10px 20px 10px 20px;
+  border: 2px solid var(--primary-color);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.hidden-input-wrapper {
+  overflow: hidden;
+  width: 200px;
+  position: relative;
+  cursor: pointer;
+}
+
+.hidden-input-wrapper > input[type="file"] {
+  font-size: 200px;
+  position: absolute;
+  background-color: red;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.hidden-input-wrapper > button {
+  display: inline-block;
+   width: 196px;
+}
