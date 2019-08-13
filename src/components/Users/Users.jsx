@@ -7,6 +7,7 @@ import { Input, InputLabel } from '../Shared/Input';
 import { Action, Button } from '../Shared/Button';
 import Modal from '../Shared/Modal';
 import InviteUsersModal from './InviteUsersModal';
+import InviteSummaryModal from './InviteSummaryModal';
 import UserTile from './UserTile';
 import Controller from './UsersController';
 import './Users.css';
@@ -21,7 +22,11 @@ class Users extends Component {
       users: [],
       filteredUsers: [],
       showInviteModal: false,
-      showInviteModal: false
+      showInviteModal: false,
+      inviteData: {
+        errors: [],
+        successes: 0
+      }
     }
   }
 
@@ -64,11 +69,17 @@ class Users extends Component {
     })
   }
 
-  handleConfirmInvites = () => {
+  handleConfirmInvites = (data) => {
     this.setState({
-      showInviteModal: false,
+      inviteData: data,
       showSummaryModal: true,
-    });
+    })
+
+    if(!data.errors.length) {
+      this.setState({
+        showInviteModal: false,
+      });
+    }
   }
 
   closeSummary = () => {
@@ -122,11 +133,7 @@ class Users extends Component {
     (
       <div className='users'>
         <InviteUsersModal show={this.state.showInviteModal} update={this.updateAfterInvite} cancel={this.cancelInvite} onConfirm={this.handleConfirmInvites}/>        
-        <Modal show={this.state.showSummaryModal}>
-        <div style={{marginBottom:'10px'}}>Successfully sent emails to users.</div>
-        <Button primary onClick={this.closeSummary}>Ok</Button>
-        </Modal>
-
+        <InviteSummaryModal show={this.state.showSummaryModal} close={this.closeSummary} data={this.state.inviteData}/>
         <Card>
           <CardHeader>
             User List

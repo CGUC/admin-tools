@@ -18,15 +18,27 @@ export default class InviteUsersModal extends Component {
     };
   }
 
-  handleInviteUsers = (e) => {
+  handleInviteUsers = async (e) => {
     e.preventDefault();
 
-    //TODO: Send emails
-
     this.setState({
-      usersToInvite: [{name: '', email: ''}],
+      loading: true,
+      error: ''
     });
-    this.props.onConfirm();
+    const response = await Controller.inviteUsers(localStorage.getItem('token'), this.state.usersToInvite);
+    this.setState({loading:false});
+
+    if (response.status == 200) {
+      this.setState({
+        usersToInvite: this.state.usersToInvite.filter(u => response.data.errors.filter(e => u.email === e.user).length),
+      });
+      this.props.onConfirm(response.data);
+    } else {
+      this.setState({
+        error: 'There was an error processing your request. Please try again.'
+      });
+    }
+
   }
 
   handleEmailChange = (e, i) => {

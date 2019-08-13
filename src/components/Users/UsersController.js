@@ -44,6 +44,21 @@ const Controller = {
       console.log(e);
       return e;
     }
+  },
+  
+  inviteUsers: async function(token, users) {
+    try {
+      const response = await axios.post(`${API_URL}/admin/inviteUsers`, { users }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+
+      return response;
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
   }
 }
 
