@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactMultiSelectCheckboxes from 'react-multiselect-checkboxes';
 import { Input } from '../Shared/Input';
 import { Action } from '../Shared/Button';
 import DeleteUserModal from './DeleteUserModal';
@@ -9,6 +10,11 @@ export default class UserTile extends Component {
   
   constructor(props) {
     super(props);
+    const options = [{
+      label: 'admin', value: 'admin'
+    }, {
+      label: 'don', value: 'don'
+    }];
 
     this.state = {
       editing: false,
@@ -16,7 +22,8 @@ export default class UserTile extends Component {
       firstName: this.props.user.firstName,
       lastName: this.props.user.lastName,
       username: this.props.user.username,
-      role: this.props.user.role
+      role: this.props.user.role,
+      roleOptions: options, 
     }
   }
 
@@ -25,8 +32,8 @@ export default class UserTile extends Component {
       editing: true,
       firstName: this.props.user.firstName,
       lastName: this.props.user.lastName,
-      role: this.props.user.role
-    })
+      role: this.props.user.role.map(r => ({ label: r, value: r }))
+    });
   }
 
   handleCancelEdit = () => {
@@ -36,8 +43,9 @@ export default class UserTile extends Component {
   }
 
   handleChange = (e, value) => {
+      console.log(e)
       this.setState({
-        [value]: value === 'role' ? e.target.value.split(', ') : e.target.value
+        [value]: value === 'role' ? e : e.target.value
       });
   }
 
@@ -49,7 +57,7 @@ export default class UserTile extends Component {
       {...this.props.user,
         firstName: this.state.firstName,
         lastName: this.state.lastName,
-        role: this.state.role
+        role: this.state.role.map(r => r.value.toLowerCase())
       }
     );
 
@@ -70,7 +78,7 @@ export default class UserTile extends Component {
           firstName: this.state.firstName,
           lastName: this.state.lastName,
           username: this.state.username,
-          role: this.state.role
+          role: this.state.role.map(r => r.value.toLowerCase())
         }
       );
     }
@@ -103,7 +111,8 @@ export default class UserTile extends Component {
           <div className="cell"> <Input width='100%' value={this.state.firstName} onChange={(e) => this.handleChange(e, 'firstName')}/></div>
           <div className="cell"> <Input width='100%' value={this.state.lastName} onChange={(e) => this.handleChange(e, 'lastName')}/></div>
           <div className="cell">{this.props.user.username}</div>
-          <div className="cell"> <Input width='100%' value={this.state.role.join(', ')} onChange={(e) => this.handleChange(e, 'role')}/></div>
+          
+          <div className="cell"> <ReactMultiSelectCheckboxes value={this.state.role} options={this.state.roleOptions} onChange={(e) => this.handleChange(e, 'role')}/></div>
           <div className="action-cell">
             <Action  onClick={this.handleSave}>
               Save
