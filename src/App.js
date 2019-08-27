@@ -22,7 +22,7 @@ class App extends Component {
           <Route path="/users" component={Users}/>
           <Route path="/analytics" component={Analytics}/>
           
-          <Redirect from='/' to='/login' />
+          <Redirect from='/' to='/dashboard' />
         </Switch>
       </div>
     );

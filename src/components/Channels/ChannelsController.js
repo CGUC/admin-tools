@@ -1,10 +1,9 @@
 import axios from 'axios';
-import { API_URL } from '../../config.js'
 
 const Controller = {
 	getChannels: async function(token) {
 		try {
-			const response = await axios.get(`${API_URL}/channels`, {
+			const response = await axios.get(`${localStorage.getItem('serverURL')}/channels`, {
 				headers: {
 					Authorization: `Bearer ${token}`
 				} 
@@ -17,7 +16,7 @@ const Controller = {
 
 	createChannel: async function(token, data) {
 		try {
-			const response = await axios.post(`${API_URL}/channels`, data, {
+			const response = await axios.post(`${localStorage.getItem('serverURL')}/channels`, data, {
 				headers: {
 					Authorization: `Bearer ${token}`
 				} 
@@ -32,7 +31,7 @@ const Controller = {
 
 	updateChannel: async function(token, id, data) {
 		try {
-			const response = await axios.put(`${API_URL}/channels/${id}`, data, {
+			const response = await axios.put(`${localStorage.getItem('serverURL')}/channels/${id}`, data, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -47,7 +46,7 @@ const Controller = {
 
   deleteChannel: async function(token, id) {
     try {
-      const response = await axios.delete(`${API_URL}/channels/${id}`, {
+      const response = await axios.delete(`${localStorage.getItem('serverURL')}/channels/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
