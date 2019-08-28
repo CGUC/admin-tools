@@ -41,7 +41,7 @@
 }
 
 .header .links {
-	margin-right: 20px;
+	margin-left: 20px;
 	display: flex;
 	flex: 1;
 	justify-content: flex-end;

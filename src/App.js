@@ -17,12 +17,12 @@ class App extends Component {
 
         <Switch>
           <Route path="/login" component={Login}/>
-          <Route path="/dashboard" component={Dashboard}/>
+          {/*<Route path="/dashboard" component={Dashboard}/>*/}
           <Route path="/channels" component={Channels}/>
           <Route path="/users" component={Users}/>
-          <Route path="/analytics" component={Analytics}/>
+          {/*<Route path="/analytics" component={Analytics}/>*/}
           
-          <Redirect from='/' to='/dashboard' />
+          <Redirect from='/' to='/channels' />
         </Switch>
       </div>
     );

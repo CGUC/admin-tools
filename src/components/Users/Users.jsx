@@ -138,6 +138,8 @@ class Users extends Component {
           <CardHeader>
             User List
           </CardHeader>
+          
+          <Button primary width='150px' style={{marginBottom:'10px'}} onClick={this.handleInvite}>Invite</Button>
 
           <InputLabel>Search</InputLabel>
           <Input onChange={this.filterUsers}/>

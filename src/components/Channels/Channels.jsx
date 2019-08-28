@@ -115,6 +115,8 @@ class Channels extends Component {
             Channel List
           </CardHeader>
 
+          <Button primary width='150px' style={{marginBottom:'20px'}} onClick={() => this.setState({showCreateModal:true})}>Create</Button>
+
           <InputLabel>Search</InputLabel>
           <Input onChange={this.filterChannels}/>
 
