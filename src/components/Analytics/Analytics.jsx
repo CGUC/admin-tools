@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
+import { defaults, Pie } from 'react-chartjs-2';
 import { Card, CardHeader } from '../Shared/Card';
 import { Button } from '../Shared/Button';
 import Spinner from '../Shared/Loader';
@@ -34,6 +35,12 @@ class Analytics extends Component {
             <Card className="stats-recent-comment-counts">
               {this.getRecentCommentCounts()}
             </Card>
+            <Card className="stats-users-by-role">
+              {this.getUserRolesPieChart()}
+            </Card>
+            <div>
+              {/*this.getStatsJSON()*/}
+            </div>
           </div>
         </Card>
       </div>
@@ -114,6 +121,54 @@ class Analytics extends Component {
         </table>
       </div>
     )
+  }
+
+  getUserRolesPieChart = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    let counts = this.state.stats.users.by_role; // looks like [{_id: { role: [roles...] }, count: 2}, ...]
+    console.log(counts);
+    let data = {
+      labels: counts.map(a => {
+        let role_desc = a._id.role.join(", ");
+        if (role_desc === "") role_desc = "<none>";
+        return role_desc;
+      }),
+      datasets: [{
+        data: counts.map(a => a.count),
+        backgroundColor: [
+          '#FF6384',
+          '#36A2EB',
+          '#FFCE56'
+          ],
+      }]
+    }
+    let options = { // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
+      tooltips: {
+        callbacks: {
+          label: function(tooltipItem, data) {
+            var dataset = data.datasets[tooltipItem.datasetIndex];
+            var total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+              return previousValue + currentValue;
+            });
+            var currentValue = dataset.data[tooltipItem.index];
+            var percentage = Math.floor(((currentValue/total) * 100)+0.5);         
+            return currentValue + " (" + percentage + "%)";
+          },
+          title: function(tooltipItem, data) {
+            return data.labels[tooltipItem[0].index];
+          }
+        }
+      }
+    }
+    return (
+      <div>
+        <h3>User permissions</h3>
+        <Pie data={data} options={options}/>
+      </div>
+    )
+
   }
 }
 
