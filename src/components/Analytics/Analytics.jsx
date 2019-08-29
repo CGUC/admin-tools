@@ -24,9 +24,11 @@ class Analytics extends Component {
           <CardHeader>
             Analytics
           </CardHeader>
-          <div className="stats-list">
-            <Spinner loading={this.state.loading}/>
-            {this.getStats()}
+          <div className="stats">
+            {/* this.getStatsJSON() */}
+            <div className="stats-overview">
+              {this.getStatsOverview()}
+            </div>
           </div>
         </Card>
       </div>
@@ -41,14 +43,32 @@ class Analytics extends Component {
     });
   }
 
-  getStats = () => {
-    let stats = [];
+  getStatsJSON = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    return (<div><pre>{JSON.stringify(this.state.stats, null, 2) }</pre></div>);
+  }
 
-    stats.push(
-      <div key="1"><pre>{JSON.stringify(this.state.stats, null, 2) }</pre></div>
+  getStatsOverview = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    let counts = this.state.stats.counts;
+    return (
+      <div className="grid-container">
+        <Card>
+          <div><b>Users:</b> {counts.users}</div>
+          <div><b>Channels:</b> {counts.channels}</div>
+          <div><b>Posts:</b> {counts.posts}</div>
+          <div><b>Likes:</b> {counts.likes}</div>
+          <div><b>Comments:</b> {counts.comments}</div>
+        </Card>
+        <Card>
+          {this.getStatsJSON()}
+        </Card>
+      </div>
     )
-  
-    return stats;
   }
 }
 
