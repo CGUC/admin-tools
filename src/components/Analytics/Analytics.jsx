@@ -103,7 +103,7 @@ class Analytics extends Component {
               this.setState({jsonOpen: !this.state.jsonOpen});
             }}>Show Raw JSON data</Button>
             {this.state.jsonOpen ? (
-              <div className="content" outlineWidth="2">
+              <div className="content">
               {this.getStatsJSON()}
               </div>
               ) : null}
