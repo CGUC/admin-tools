@@ -37,8 +37,8 @@ class Analytics extends Component {
               {this.getRecentCommentCounts()}
             </Card>
           </div>
-          <Card className="stats-posts-by-day" >
-            {this.getPostsByDayBarChart()}
+          <Card className="stats-posts-comments-by-day" >
+            {this.getPostsAndCommentsByDayBarChart()}
           </Card>
           <div className="grid-container">
             <Card className="stats-users-by-role">
@@ -129,59 +129,92 @@ class Analytics extends Component {
     )
   }
 
-  getPostsByDayBarChart = () => {
+  getPostsAndCommentsByDayBarChart = () => {
     if (this.state.loading) {
       return (<Spinner loading={this.state.loading}/>)
     }
 
-    // looks like
+    // looks like:
     // [{
     //   date: Date(2019-12-31T00:00:00.000Z),
     //   post_count: 1,
     // }, ...]
-    let counts = this.state.stats.posts.by_date;
+    // should already be sorted in ascending order by date
+    let post_counts = this.state.stats.posts.by_date;
 
-    let date = moment.utc(counts[0].date);
-    let end_date = moment.utc(counts[counts.length - 1].date);
-    if (date > moment.utc(end_date).subtract(7, 'd')) {
-      date = moment.utc(end_date).subtract(7, 'd'); // pad dates if there aren't a lot of entries to make the graph look nicer
-    }
+    // looks like:
+    // [{
+    //   date: Date(2019-12-31T00:00:00.000Z),
+    //   comment_count: 1,
+    // }, ...]
+    // should already be sorted in ascending order by date
+    let comment_counts = this.state.stats.comments.by_date;
+
+    let max_end_date = Math.max(
+      moment.utc(post_counts[post_counts.length - 1].date),
+      moment.utc(comment_counts[comment_counts.length - 1].date)
+    );
+    let end_date = moment.utc(max_end_date);
+
+    let min_start_date = Math.min(
+      moment.utc(post_counts[0].date),
+      moment.utc(comment_counts[0].date),
+      moment.utc(end_date).subtract(7, 'd') // pad dates if there aren't a lot of entries to make the graph look nicer
+    );    
+    let cur_date = moment.utc(min_start_date);
 
     let labels = [];
-    let data_series = [];
-    for (let i = 0; date <= end_date; date.add(24, 'h')) {
-      labels.push(date.format('YYYY-MM-DD'));
-      if (date < moment.utc(counts[i].date)) { // there is a gap in the dates
-        data_series.push(0);
+    let post_count_series = [];
+    let comment_count_series = [];
+
+    for (let i = 0, j = 0; cur_date <= end_date; cur_date.add(24, 'h')) {
+      labels.push(cur_date.format('YYYY-MM-DD'));
+
+      if (cur_date < moment.utc(post_counts[i].date)) {
+        post_count_series.push(0); // there is a gap in the post date counts, pad with 0
       } else {
-        data_series.push(counts[i].post_count);
+        post_count_series.push(post_counts[i].post_count);
         i += 1;
       }
+
+      if (cur_date < moment.utc(comment_counts[j].date)) {
+        comment_count_series.push(0); // there is a gap in the comment date counts, pad with 0
+      } else {
+        comment_count_series.push(comment_counts[j].comment_count);
+        j += 1;
+      }
     }
+
     let data = {
       labels: labels,
       datasets: [
         {
           label: 'Post count',
           backgroundColor: 'rgba(255,99,132)',
-          data: data_series,
+          data: post_count_series,
+        },
+        {
+          label: 'Comment count',
+          backgroundColor: 'rgba(255,212,99)',
+          data: comment_count_series,
         }
       ]
     };
 
     let options = {
-      legend: false,
       scales: {
         xAxes: [{
+          stacked: true,
           scaleLabel: {
             display: true,
             labelString: 'Date'
           }
         }],
         yAxes: [{
+          stacked: true,
           scaleLabel: {
             display: true,
-            labelString: 'Post count'
+            labelString: 'Post or comment count'
           }
         }]
       }
@@ -189,9 +222,9 @@ class Analytics extends Component {
 
     return (
       <div>
-        <h3>Posts per day</h3>
+        <h3>Posts and comments per day</h3>
         <div className="hint-text">Timestamps are in UTC</div>
-        <Bar data={data} width={100} height={30} options={options} />
+        <Bar data={data} width={100} height={40} options={options} />
       </div>
     )
   }
