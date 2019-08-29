@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
 import moment from 'moment';
-import { Pie, Bar, Bubble } from 'react-chartjs-2';
+import { Pie, Bar, Bubble, Line } from 'react-chartjs-2';
 import { Card, CardHeader } from '../Shared/Card';
 import { Button } from '../Shared/Button';
 import Spinner from '../Shared/Loader';
@@ -94,6 +94,9 @@ class Analytics extends Component {
           </Card>
           <Card className="stats-time-card">
             {this.getTimeCardBubblePlot()}
+          </Card>
+          <Card className="stats-contributing-users">
+            {this.getContributingUsersByDayBarChart()}
           </Card>
           <div>
             <Button className="collapsible-content" onClick={ (e) => {
@@ -282,6 +285,48 @@ class Analytics extends Component {
     )
   }
 
+  getUserRolesPieChart = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    let counts = this.state.stats.users.by_role; // looks like [{_id: { role: [roles...] }, count: 2}, ...]
+    let data = {
+      labels: counts.map(a => {
+        let role_desc = a._id.role.join(", ");
+        if (role_desc === "") role_desc = "<none>";
+        return role_desc;
+      }),
+      datasets: [{
+        data: counts.map(a => a.count),
+        backgroundColor: backgroundColorPalette
+      }]
+    }
+    let options = { // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
+      tooltips: {
+        callbacks: {
+          label: function(tooltipItem, data) {
+            var dataset = data.datasets[tooltipItem.datasetIndex];
+            var total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+              return previousValue + currentValue;
+            });
+            var currentValue = dataset.data[tooltipItem.index];
+            var percentage = Math.floor(((currentValue/total) * 100)+0.5);         
+            return currentValue + " (" + percentage + "%)";
+          },
+          title: function(tooltipItem, data) {
+            return data.labels[tooltipItem[0].index];
+          }
+        }
+      }
+    }
+    return (
+      <div>
+        <h3>Users by permissions</h3>
+        <Pie data={data} options={options}/>
+      </div>
+    )
+  }
+
   getUserSubscriptionsByChannelPieChart = () => {
     if (this.state.loading) {
       return (<Spinner loading={this.state.loading}/>)
@@ -355,7 +400,7 @@ class Analytics extends Component {
     let min_start_date = Math.min(
       moment.utc(post_counts[0].date),
       moment.utc(comment_counts[0].date),
-      moment.utc(end_date).subtract(7, 'd') // pad dates if there aren't a lot of entries to make the graph look nicer
+      moment.utc(end_date).subtract(7, 'd') // pad dates if there aren't a lot of entries, to make the graph look nicer
     );    
     let cur_date = moment.utc(min_start_date);
 
@@ -565,44 +610,77 @@ class Analytics extends Component {
     )
   }
 
-  getUserRolesPieChart = () => {
+  // user counts as contributing if they made a post or comment on that day
+  // fates for post likes aren't recorded in the database, so they can't be tracked in this way
+  getContributingUsersByDayBarChart = () => {
     if (this.state.loading) {
       return (<Spinner loading={this.state.loading}/>)
     }
-    let counts = this.state.stats.users.by_role; // looks like [{_id: { role: [roles...] }, count: 2}, ...]
-    let data = {
-      labels: counts.map(a => {
-        let role_desc = a._id.role.join(", ");
-        if (role_desc === "") role_desc = "<none>";
-        return role_desc;
-      }),
-      datasets: [{
-        data: counts.map(a => a.count),
-        backgroundColor: backgroundColorPalette
-      }]
-    }
-    let options = { // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
-      tooltips: {
-        callbacks: {
-          label: function(tooltipItem, data) {
-            var dataset = data.datasets[tooltipItem.datasetIndex];
-            var total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
-              return previousValue + currentValue;
-            });
-            var currentValue = dataset.data[tooltipItem.index];
-            var percentage = Math.floor(((currentValue/total) * 100)+0.5);         
-            return currentValue + " (" + percentage + "%)";
-          },
-          title: function(tooltipItem, data) {
-            return data.labels[tooltipItem[0].index];
-          }
-        }
+
+    // looks like:
+    // [{
+    //   date: Date(2019-12-31T00:00:00.000Z),
+    //   contributing_user_count: 2,
+    // }, ...]
+    // should already be sorted in ascending order by date
+    let contributing_users = this.state.stats.users.contributing_by_date;
+
+    let end_date = moment.utc(contributing_users[contributing_users.length - 1].date);
+    let min_start_date = Math.min(
+      moment.utc(contributing_users[0].date),
+      moment.utc(end_date).subtract(7, 'd') // pad dates if there aren't a lot of entries, to make the graph look nicer
+    );    
+    let cur_date = moment.utc(min_start_date);
+
+    let labels = [];
+    let data_series = [];
+
+    for (let i = 0; cur_date <= end_date; cur_date.add(24, 'h')) {
+      labels.push(cur_date.format('YYYY-MM-DD'));
+
+      if (cur_date < moment.utc(contributing_users[i].date)) {
+        data_series.push(0); // there is a gap in the post date counts, pad with 0
+      } else {
+        data_series.push(contributing_users[i].contributing_user_count);
+        i += 1;
       }
     }
+
+    let data = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Contributing user count',
+          backgroundColor: 'rgba(132,99,255)',
+          fill: false,
+          data: data_series,
+        },
+      ]
+    };
+
+    let options = {
+      legend: false,
+      scales: {
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Date'
+          }
+        }],
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Contributing user count'
+          }
+        }]
+      }
+    };
+
     return (
       <div>
-        <h3>Users by permissions</h3>
-        <Pie data={data} options={options}/>
+        <h3>Unique contributing users per day</h3>
+        <div className="hint-text">A user counts as contributing if they made a post or comment on that day</div>
+        <Line data={data} width={100} height={40} options={options} />
       </div>
     )
   }
