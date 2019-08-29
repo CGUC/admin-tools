@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
-import { defaults, Pie } from 'react-chartjs-2';
+import moment from 'moment';
+import { Pie, Bar } from 'react-chartjs-2';
 import { Card, CardHeader } from '../Shared/Card';
 import { Button } from '../Shared/Button';
 import Spinner from '../Shared/Loader';
@@ -35,13 +36,18 @@ class Analytics extends Component {
             <Card className="stats-recent-comment-counts">
               {this.getRecentCommentCounts()}
             </Card>
+          </div>
+          <Card className="stats-posts-by-day" >
+            {this.getPostsByDayBarChart()}
+          </Card>
+          <div className="grid-container">
             <Card className="stats-users-by-role">
               {this.getUserRolesPieChart()}
             </Card>
-            <div>
-              {/*this.getStatsJSON()*/}
-            </div>
           </div>
+          <div>
+              {this.getStatsJSON()}
+            </div>
         </Card>
       </div>
     );
@@ -123,12 +129,78 @@ class Analytics extends Component {
     )
   }
 
+  getPostsByDayBarChart = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+
+    // looks like
+    // [{
+    //   date: Date(2019-12-31T00:00:00.000Z),
+    //   post_count: 1,
+    // }, ...]
+    let counts = this.state.stats.posts.by_date;
+
+    let date = moment.utc(counts[0].date);
+    let end_date = moment.utc(counts[counts.length - 1].date);
+    if (date > moment.utc(end_date).subtract(7, 'd')) {
+      date = moment.utc(end_date).subtract(7, 'd'); // pad dates if there aren't a lot of entries to make the graph look nicer
+    }
+
+    let labels = [];
+    let data_series = [];
+    for (let i = 0; date <= end_date; date.add(24, 'h')) {
+      labels.push(date.format('YYYY-MM-DD'));
+      if (date < moment.utc(counts[i].date)) { // there is a gap in the dates
+        data_series.push(0);
+      } else {
+        data_series.push(counts[i].post_count);
+        i += 1;
+      }
+    }
+    let data = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Post count',
+          backgroundColor: 'rgba(255,99,132)',
+          data: data_series,
+        }
+      ]
+    };
+
+    let options = {
+      legend: false,
+      scales: {
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Date'
+          }
+        }],
+        yAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Post count'
+          }
+        }]
+      }
+    };
+
+    return (
+      <div>
+        <h3>Posts per day</h3>
+        <div className="hint-text">Timestamps are in UTC</div>
+        <Bar data={data} width={100} height={30} options={options} />
+      </div>
+    )
+  }
+
   getUserRolesPieChart = () => {
     if (this.state.loading) {
       return (<Spinner loading={this.state.loading}/>)
     }
     let counts = this.state.stats.users.by_role; // looks like [{_id: { role: [roles...] }, count: 2}, ...]
-    console.log(counts);
     let data = {
       labels: counts.map(a => {
         let role_desc = a._id.role.join(", ");
@@ -164,11 +236,10 @@ class Analytics extends Component {
     }
     return (
       <div>
-        <h3>User permissions</h3>
+        <h3>Users by permissions</h3>
         <Pie data={data} options={options}/>
       </div>
     )
-
   }
 }
 
