@@ -28,13 +28,13 @@ class Login extends Component {
     this.setState({loading: false});
 
     if (response.status !== 200) {
-      this.setState({error: 'Invalid user credentials.'});
-    } else if (response.err) {
+      this.setState({error: response.data.err.message});
+    } else if (response.data.err) {
       this.setState({error: response.data.err.message});
     } else {
       // This is safe since react protects against XSS.
       // As long as we don't use a CDN it should be fine.
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('token', response.data[0].token);
       this.props.history.push('/dashboard');
     }
   };
