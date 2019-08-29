@@ -24,11 +24,16 @@ class Analytics extends Component {
           <CardHeader>
             Analytics
           </CardHeader>
-          <div className="stats">
-            {/* this.getStatsJSON() */}
-            <div className="stats-overview">
+          <div className="grid-container">
+            <Card className="stats-overview">
               {this.getStatsOverview()}
-            </div>
+            </Card>
+            <Card className="stats-recent-post-counts">
+              {this.getRecentPostCounts()}
+            </Card>
+            <Card className="stats-recent-comment-counts">
+              {this.getRecentCommentCounts()}
+            </Card>
           </div>
         </Card>
       </div>
@@ -56,17 +61,57 @@ class Analytics extends Component {
     }
     let counts = this.state.stats.counts;
     return (
-      <div className="grid-container">
-        <Card>
-          <div><b>Users:</b> {counts.users}</div>
-          <div><b>Channels:</b> {counts.channels}</div>
-          <div><b>Posts:</b> {counts.posts}</div>
-          <div><b>Likes:</b> {counts.likes}</div>
-          <div><b>Comments:</b> {counts.comments}</div>
-        </Card>
-        <Card>
-          {this.getStatsJSON()}
-        </Card>
+      <div>
+        <h3>Overview</h3>
+        <table className="table">
+          <tbody className="stats-summary">
+          <tr><td>Channels:</td><td>{counts.channels}</td></tr>
+          <tr><td>Users:</td><td>{counts.users}</td></tr>
+          <tr><td>Posts:</td><td>{counts.posts}</td></tr>
+          <tr><td>Likes:</td><td>{counts.likes}</td></tr>
+          <tr><td>Comments:</td><td>{counts.comments}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  getRecentPostCounts = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    let counts = this.state.stats.posts.recent_counts;
+    return (
+      <div>
+        <h3>Posts</h3>
+        <table className="table">
+          <tbody className="stats-summary">
+            <tr><td>In the past 24 hours:</td><td>{counts.past_24h}</td></tr>
+            <tr><td>In the past 3 days:</td><td>{counts.past_3d}</td></tr>
+            <tr><td>In the past 7 days:</td><td>{counts.past_7d}</td></tr>
+            <tr><td>In the past 30 days:</td><td>{counts.past_30d}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  getRecentCommentCounts = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    let counts = this.state.stats.comments.recent_counts;
+    return (
+      <div>
+        <h3>Comments</h3>
+        <table className="table">
+          <tbody className="stats-summary">
+            <tr><td>In the past 24 hours:</td><td>{counts.past_24h}</td></tr>
+            <tr><td>In the past 3 days:</td><td>{counts.past_3d}</td></tr>
+            <tr><td>In the past 7 days:</td><td>{counts.past_7d}</td></tr>
+            <tr><td>In the past 30 days:</td><td>{counts.past_30d}</td></tr>
+          </tbody>
+        </table>
       </div>
     )
   }
