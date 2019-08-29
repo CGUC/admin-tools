@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter, Redirect, Link } from 'react-router-dom';
 import moment from 'moment';
-import { Pie, Bar } from 'react-chartjs-2';
+import { Pie, Bar, Bubble } from 'react-chartjs-2';
 import { Card, CardHeader } from '../Shared/Card';
 import { Button } from '../Shared/Button';
 import Spinner from '../Shared/Loader';
@@ -14,8 +14,23 @@ class Analytics extends Component {
 
     this.state = {
       stats: [],
-      loading: true
+      loading: true,
+      error: false
     };
+  }
+
+  async componentDidMount() {
+    const response = await Controller.getStats(localStorage.getItem('token'));
+    if (!response.error) {
+      this.setState({
+        loading: false,
+        stats: response,
+      });
+    } else {
+      this.setState({
+        error: true,
+      })
+    }
   }
 
   render() {
@@ -26,6 +41,11 @@ class Analytics extends Component {
           <CardHeader>
             Analytics
           </CardHeader>
+          {this.state.error ?
+          <Card className="error-msg">
+            Error: Something went wrong when trying to communicate with the server.
+          </Card>
+          : null}
           <div className="grid-container">
             <Card className="stats-overview">
               {this.getStatsOverview()}
@@ -37,8 +57,11 @@ class Analytics extends Component {
               {this.getRecentCommentCounts()}
             </Card>
           </div>
-          <Card className="stats-posts-comments-by-day" >
+          <Card className="stats-posts-comments-by-day">
             {this.getPostsAndCommentsByDayBarChart()}
+          </Card>
+          <Card className="stats-time-card">
+            {this.getTimeCardBubblePlot()}
           </Card>
           <div className="grid-container">
             <Card className="stats-users-by-role">
@@ -51,14 +74,6 @@ class Analytics extends Component {
         </Card>
       </div>
     );
-  }
-
-  async componentDidMount() {
-    const response = await Controller.getStats(localStorage.getItem('token'));
-    this.setState({
-      loading: false,
-      stats: response,
-    });
   }
 
   getStatsJSON = () => {
@@ -225,6 +240,146 @@ class Analytics extends Component {
         <h3>Posts and comments per day</h3>
         <div className="hint-text">Timestamps are in UTC</div>
         <Bar data={data} width={100} height={40} options={options} />
+      </div>
+    )
+  }
+
+  getTimeCardBubblePlot = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+
+    // looks like:
+    // [{
+    //   _id: { dayOfWeek: 7, hour: 22 },
+    //   post_count: 1,
+    // }, ...]
+    // should already be sorted in ascending order by dayOfWeek and then hour
+    let post_counts = this.state.stats.posts.by_dayOfWeek_and_hour;
+
+    // looks like:
+    // [{
+    //   _id: { dayOfWeek: 7, hour: 22 },
+    //   comment_count: 1,
+    // }, ...]
+    // should already be sorted in ascending order by dayOfWeek and then hour
+    let comment_counts = this.state.stats.comments.by_dayOfWeek_and_hour;
+
+    // see: https://docs.mongodb.com/manual/reference/operator/aggregation/dayOfWeek/
+    const days = {
+      1: "Sunday",
+      2: "Monday",
+      3: "Tuesday",
+      4: "Wednesday",
+      5: "Thursday",
+      6: "Friday",
+      7: "Saturday"
+    };
+
+    let counts = {}; // counts[dayOfWeek][hour]
+
+    for (let i = 1; i <= 7; i += 1) {
+      counts[i] = {};
+      for (let j = 0; j <= 23; j += 1) {
+        counts[i][j] = 0;
+      }
+    }
+
+    // bucket every 2 hours
+
+    post_counts.forEach((a) => {
+      let hour = Math.floor(a._id.hour/2)*2;
+      counts[a._id.dayOfWeek][hour] += a.post_count;
+    })
+
+    comment_counts.forEach((a) => {
+      let hour = Math.floor(a._id.hour/2)*2;
+      counts[a._id.dayOfWeek][hour] += a.comment_count;
+    })
+
+    let max_r = 21; // arbitrary max r size for bubble
+    let max_count = 1; // arbitrary starting value for max_count
+    let data_series = [];
+
+    // find the max count and rescale to prevent bubbles from being too big
+
+    for (let i = 1; i <= 7; i += 1) {
+      for (let j = 0; j <= 23; j += 1) {
+        max_count = Math.max(counts[i][j], max_count);
+      }
+    }
+
+    let scaling_factor = Math.min(max_r/max_count, 1); // scale down if too large, but avoid scaling up
+
+    for (let i = 1; i <= 7; i += 1) {
+      for (let j = 0; j <= 23; j += 1) {
+        let r = counts[i][j];
+        if (r > 0) {
+          r = Math.max(1, r * scaling_factor); // make sure that non-zero bubbles are still selectable
+        }
+        data_series.push({
+          x: j,
+          y: days[i],
+          r: r,
+          value: counts[i][j]
+        }) // flatten out data series into a format chart.js can handle
+      }
+    }
+
+    const data = {
+      yLabels: Object.values(days),
+      datasets: [
+        {
+          label: 'Post and comment counts',
+          fill: false,
+          backgroundColor: 'rgba(75,192,192,0.4)',
+          data: data_series
+        }
+      ]
+    };
+
+    const options = {
+      legend: false,
+      tooltips: {
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+            return tooltipItem.yLabel + " " + tooltipItem.xLabel + ":00 (" + value.value + ")";
+          }
+        }
+      },
+      scales: {
+        xAxes: [{
+          scaleLabel: {
+            display: true,
+            labelString: 'Hour'
+          },
+          ticks: {
+            stepSize: 2, // bucket every 2 hours
+            min: 0,
+            max: 24
+          },
+        }],
+        yAxes: [{
+          type: 'category',
+          scaleLabel: {
+            display: true,
+            labelString: 'Day of week'
+          },
+          ticks: {
+            stepSize: 1,
+            min: 'Sunday',
+            max: 'Saturday'
+          },
+        }]
+      }
+    };
+
+    return (
+      <div>
+        <h3>Time card for posts and comments</h3>
+        <div className="hint-text">Timestamps are in UTC</div>
+        <Bubble data={data} options={options} height={120}/>
       </div>
     )
   }

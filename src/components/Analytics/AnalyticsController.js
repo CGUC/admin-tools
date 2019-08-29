@@ -11,6 +11,7 @@ const Controller = {
 			return response.data;
 		} catch (e) {
 			console.log(e);
+			return { error: true };
 		}
 	}
 }
