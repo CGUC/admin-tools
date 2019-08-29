@@ -8,6 +8,21 @@ import Spinner from '../Shared/Loader';
 import Controller from './AnalyticsController';
 import './Analytics.css';
 
+const backgroundColorPalette = [ // TODO: these are just ad-hoc hard-coded values for now; where to get a better colour palette?
+  '#FF6384',
+  '#36A2EB',
+  '#FFCE56',
+  '#33a02c',
+  '#6a3d9a',
+  '#ff7f00',
+  '#a6cee3',
+  '#b2df8a',
+  '#fdbf6f',
+  '#cab2d6',
+  '#ffff99',
+  '#b15928',
+]
+
 class Analytics extends Component {
   constructor(props) {
     super(props)
@@ -15,7 +30,8 @@ class Analytics extends Component {
     this.state = {
       stats: [],
       loading: true,
-      error: false
+      error: false,
+      jsonOpen: false
     };
   }
 
@@ -57,20 +73,38 @@ class Analytics extends Component {
               {this.getRecentCommentCounts()}
             </Card>
           </div>
+          <div className="grid-container">
+            <Card className="stats-posts-by-channel">
+              {this.getPostsByChannelPieChart()}
+            </Card>
+            <Card className="stats-posts-by-channel">
+              {this.getCommentsByChannelPieChart()}
+            </Card>
+          </div>
+          <div className="grid-container">
+            <Card className="stats-users-by-role">
+              {this.getUserRolesPieChart()}
+            </Card>
+            <Card className="stats-subscribers-by-channel">
+              {this.getUserSubscriptionsByChannelPieChart()}
+            </Card>
+          </div>
           <Card className="stats-posts-comments-by-day">
             {this.getPostsAndCommentsByDayBarChart()}
           </Card>
           <Card className="stats-time-card">
             {this.getTimeCardBubblePlot()}
           </Card>
-          <div className="grid-container">
-            <Card className="stats-users-by-role">
-              {this.getUserRolesPieChart()}
-            </Card>
-          </div>
           <div>
+            <Button className="collapsible-content" onClick={ (e) => {
+              this.setState({jsonOpen: !this.state.jsonOpen});
+            }}>Show Raw JSON data</Button>
+            {this.state.jsonOpen ? (
+              <div className="content" outlineWidth="2">
               {this.getStatsJSON()}
-            </div>
+              </div>
+              ) : null}
+          </div>
         </Card>
       </div>
     );
@@ -140,6 +174,153 @@ class Analytics extends Component {
             <tr><td>In the past 30 days:</td><td>{counts.past_30d}</td></tr>
           </tbody>
         </table>
+      </div>
+    )
+  }
+
+  getPostsByChannelPieChart = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    
+    let counts = this.state.stats.posts.by_channel;
+    // looks like:
+    // [{
+    //   _id: { tags: ["test"] },
+    //   post_count: 1,
+    //   like_count: 2,
+    //   comment_count: 3,
+    // }, ...]
+    counts = counts.slice().reverse(); // reverse array so that oldest channels are first
+
+    let data = {
+      labels: counts.map(a => {
+        let tag_desc = a._id.tags.join(", ");
+        return tag_desc;
+      }),
+      datasets: [{
+        label: "post_count",
+        data: counts.map(a => a.post_count),
+        backgroundColor: backgroundColorPalette
+      }]
+    }
+    let options = {
+      tooltips: { // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let dataset = data.datasets[tooltipItem.datasetIndex];
+            let total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+              return previousValue + currentValue;
+            });
+            let currentValue = dataset.data[tooltipItem.index];
+            let percentage = Math.floor(((currentValue/total) * 100)+0.5);
+            return currentValue + " posts (" + percentage + "%)";
+          },
+          title: function(tooltipItem, data) {
+            return data.labels[tooltipItem[0].index];
+          }
+        }
+      }
+    }
+    return (
+      <div>
+        <h3>Posts by topic</h3>
+        <Pie data={data} options={options}/>
+      </div>
+    )
+  }
+
+  getCommentsByChannelPieChart = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    
+    let counts = this.state.stats.posts.by_channel;
+    // looks like:
+    // [{
+    //   _id: { tags: ["test"] },
+    //   post_count: 1,
+    //   like_count: 2,
+    //   comment_count: 3,
+    // }, ...]
+    counts = counts.slice().reverse(); // reverse array so that oldest channels are first
+
+    let data = {
+      labels: counts.map(a => {
+        let tag_desc = a._id.tags.join(", ");
+        return tag_desc;
+      }),
+      datasets: [{
+        label: "comment_count",
+        data: counts.map(a => a.comment_count),
+        backgroundColor: backgroundColorPalette
+      }]
+    }
+    let options = {
+      tooltips: { // // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let dataset = data.datasets[tooltipItem.datasetIndex];
+            let total = dataset.data.reduce(function(previousValue, currentValue, currentIndex, array) {
+              return previousValue + currentValue;
+            });
+            let currentValue = dataset.data[tooltipItem.index];
+            let percentage = Math.floor(((currentValue/total) * 100)+0.5);
+            return currentValue + " comments (" + percentage + "%)";
+          },
+          title: function(tooltipItem, data) {
+            return data.labels[tooltipItem[0].index];
+          }
+        }
+      }
+    }
+    return (
+      <div>
+        <h3>Comments by topic</h3>
+        <Pie data={data} options={options} />
+      </div>
+    )
+  }
+
+  getUserSubscriptionsByChannelPieChart = () => {
+    if (this.state.loading) {
+      return (<Spinner loading={this.state.loading}/>)
+    }
+    
+    let counts = this.state.stats.users.subscriptions_by_channel;
+    // looks like:
+    // [{
+    //   _id: { channel_name: "Test", channel_tags: ["Test"] },
+    //   subscriber_count: 2
+    // }, ...]
+    counts = counts.slice().reverse(); // reverse array so that oldest channels are first
+
+    let data = {
+      labels: counts.map(a => a._id.channel_name),
+      datasets: [{
+        label: "subscriber_count",
+        data: counts.map(a => a.subscriber_count),
+        backgroundColor: backgroundColorPalette
+      }]
+    }
+    let options = {
+      tooltips: { // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let dataset = data.datasets[tooltipItem.datasetIndex];
+            let currentValue = dataset.data[tooltipItem.index];
+            return currentValue + " subscribers";
+          },
+          title: function(tooltipItem, data) {
+            return data.labels[tooltipItem[0].index];
+          }
+        }
+      }
+    }
+    return (
+      <div>
+        <h3>User subscriptions by channel</h3>
+        <Pie data={data} options={options}/>
       </div>
     )
   }
@@ -229,7 +410,7 @@ class Analytics extends Component {
           stacked: true,
           scaleLabel: {
             display: true,
-            labelString: 'Post or comment count'
+            labelString: 'Post and comment count'
           }
         }]
       }
@@ -397,11 +578,7 @@ class Analytics extends Component {
       }),
       datasets: [{
         data: counts.map(a => a.count),
-        backgroundColor: [
-          '#FF6384',
-          '#36A2EB',
-          '#FFCE56'
-          ],
+        backgroundColor: backgroundColorPalette
       }]
     }
     let options = { // show percentage https://stackoverflow.com/questions/37257034/chart-js-2-0-doughnut-tooltip-percentages
