@@ -411,14 +411,14 @@ class Analytics extends Component {
     for (let i = 0, j = 0; cur_date <= end_date; cur_date.add(24, 'h')) {
       labels.push(cur_date.format('YYYY-MM-DD'));
 
-      if (cur_date < moment.utc(post_counts[i].date)) {
+      if (i >= post_counts.length || cur_date < moment.utc(post_counts[i].date)) {
         post_count_series.push(0); // there is a gap in the post date counts, pad with 0
       } else {
         post_count_series.push(post_counts[i].post_count);
         i += 1;
       }
 
-      if (cur_date < moment.utc(comment_counts[j].date)) {
+      if (j >= comment_counts.length || cur_date < moment.utc(comment_counts[j].date)) {
         comment_count_series.push(0); // there is a gap in the comment date counts, pad with 0
       } else {
         comment_count_series.push(comment_counts[j].comment_count);
@@ -638,7 +638,7 @@ class Analytics extends Component {
     for (let i = 0; cur_date <= end_date; cur_date.add(24, 'h')) {
       labels.push(cur_date.format('YYYY-MM-DD'));
 
-      if (cur_date < moment.utc(contributing_users[i].date)) {
+      if (i >= contributing_users.length || cur_date < moment.utc(contributing_users[i].date)) {
         data_series.push(0); // there is a gap in the post date counts, pad with 0
       } else {
         data_series.push(contributing_users[i].contributing_user_count);
