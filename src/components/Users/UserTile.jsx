@@ -10,10 +10,14 @@ export default class UserTile extends Component {
   
   constructor(props) {
     super(props);
+
+    //TODO make this easier to change, potentially store in database
     const options = [{
       label: 'admin', value: 'admin'
     }, {
       label: 'don', value: 'don'
+    }, {
+      label: 'superintendent', value: 'superintendent'
     }];
 
     this.state = {
