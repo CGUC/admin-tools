@@ -292,9 +292,12 @@ class Analytics extends Component {
     let counts = this.state.stats.users.by_role; // looks like [{_id: { role: [roles...] }, count: 2}, ...]
     let data = {
       labels: counts.map(a => {
-        let role_desc = a._id.role.join(", ");
-        if (role_desc === "") role_desc = "<none>";
-        return role_desc;
+        let role_desc = a._id.role;
+        if (role_desc == undefined || role_desc == ''){
+          return "<none>";
+        } else{
+          return role_desc.join(", ");
+        }
       }),
       datasets: [{
         data: counts.map(a => a.count),
